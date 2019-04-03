@@ -67,3 +67,34 @@ bivar x2 x3 / bwm=1.5 plots=ContourScatter;
 run;
 
 /* Question 2 */
+proc iml;
+start hyper( population_n, x1, x2, x3, m1, m2);
+	m3 = m1 - m2;
+	do i = 1 to 100;
+		fx = ( (fact(m1))/(fact(x1) * fact(n - x1))
+			(fact(m2))/(fact(x2) * fact(n - x2))
+			(fact(m3))/(fact(x3) * fact(n - x3)))
+			/ (fact(population_n))/(fact(i) * fact(population_n - i));
+	end;
+return fx;
+finish;
+
+N = 100;
+m = { 50 30 20 };
+
+axis = 1:N;
+print axis;
+
+free plotdata_2;
+
+do i = 1 to N;
+	do j = 1 to N;
+		do k = 1 to N;
+			plotmatrix_2 = plotmatrix_2 // ( hyper(N, axis[i], axis[j], axis[k], m[1], m[2]) || axis[i] || axis[j] || axis[k]);
+		end;
+	end;
+end;
+
+print plotdata_2
+
+
