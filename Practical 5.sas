@@ -1,3 +1,4 @@
+/* Question 1 */
 proc iml;
 
 start multinomial(n, x1, x2, p1, p2);
@@ -15,7 +16,7 @@ return fx;
 finish;
 
 n = 100;
-p = { 0.5 0.3 };
+p = { 0.5 0.3 0.2 };
 
 axis = 0:n;
 print axis;
@@ -34,6 +35,13 @@ create plotdata from plotmatrix[c = c];
 append from plotmatrix;
 close plotdata;
 
+sample_size = 1000;
+c = { X1 X2 X3 };
+x = RandMultinomial(sample_size, n, p);
+create MN from x[c=c];
+append from x;
+close MN;
+
 proc template;
 define statgraph layoutoverlay3d;
 	begingraph;
@@ -48,4 +56,14 @@ end;
 run;
 proc sgrender data=plotdata template=layoutoverlay3d;
 run;
+
+
 quit;
+ods graphics on;
+proc kde data=MN;
+bivar x1 x2 / bwm=1.5 plots=ContourScatter;
+bivar x1 x3 / bwm=1.5 plots=ContourScatter;
+bivar x2 x3 / bwm=1.5 plots=ContourScatter;
+run;
+
+/* Question 2 */
