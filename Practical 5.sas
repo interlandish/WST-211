@@ -73,61 +73,54 @@ quit;
 
 /* Question 2 */
 proc iml;
-start hyper( population_n, x1, x2, x3, m1, m2);
-	m3 = m1 - m2;
-	do i = 1 to 100;
-		fx = ( (fact(m1))/(fact(x1) * fact(n - x1))
-			(fact(m2))/(fact(x2) * fact(n - x2))
-			(fact(m3))/(fact(x3) * fact(n - x3)))
-			/ (fact(population_n))/(fact(i) * fact(population_n - i));
+
+start extended_hyper(population, sample, x1, x2, m1, m2);
+	x3 = sample - x1 - x2;
+	m3 = population - m1 - m2;
+	if x3 > 0 then do;
+		comb_1 = fact(m1) / ( fact(x1) * fact( m1 - x1 ));
+		comb_2 = fact(m2) / ( fact(x2) * fact( m2 - x2 ));
+		comb_3 = fact(m3) / ( fact(x3) * fact( m3 - x3 ));
+		comb_4 = fact(population) / ( fact(sample) * fact( population - sample ));
+		fx = (comb_1 * comb_2 * comb_3) / (comb_4);
 	end;
-return fx;
+	else;
+		fx = 0;
+	return fx;
 finish;
 
-N = 100;
+population = 100;
 m = { 50 30 20 };
+sample = 10;
+axis = 0:sample;
 
-axis = 1:N;
-print axis;
+free plot_matrix_2;
 
-free plotdata_2;
-
-do i = 1 to N;
-	do j = 1 to N;
-		do k = 1 to N;
-			plotmatrix_2 = plotmatrix_2 // ( hyper(N, axis[i], axis[j], axis[k], m[1], m[2]) || axis[i] || axis[j] || axis[k]);
-		end;
+do i = 1 to sample + 1;
+	do j = 1 to sample + 1;
+		plot_matrix_2 = plot_matrix_2 // ( extended_hyper(population, sample, axis[i], axis[j], m[1], m[2]) || axis[i] || axis[j] );
 	end;
 end;
 
-print plotdata_2
+* print plot_matrix_2;
+column_names = { fx x1 x2 };
 
+create plot_data_2 from plot_matrix_2[c = column_names];
+append from plot_matrix_2;
+close plot_data_2;
 
-proc iml;
-start hyper( population_n, x1, x2, x3, m1, m2);
-	m3 = m1 - m2;
-	do i = 1 to 100;
-		fx = ( (fact(m1))/(fact(x1) * fact(m1 - x1))*
-			(fact(m2))/(fact(x2) * fact(m2 - x2))*
-			(fact(m3))/(fact(x3) * fact(m3 - x3)))
-			/ (fact(population_n))/(fact(i) * fact(population_n - i));
-	end;
-return fx;
-finish;
-
-N = 100;
-m = { 50 30 20 };
-
-axis = 1:N;
-
-free plotmatrix_2;
-
-do i = 1 to N;
-	do j = 1 to N;
-		plotmatrix_2 = plotmatrix_2 // ( hyper(N, axis[i], axis[j], axis[k], m[1], m[2]) || axis[i] || axis[j] || axis[k]);
-	end;
+proc template;
+define statgraph density_plot_2;
+	begingraph;
+		entrytitle "Extended Hypergeometric Density Plot of X1 and X2";
+		layout overlay3d / tilt = 10 rotate = 54 walldisplay = none cube = false;
+		surfaceplotparm x = x1 y = x2 z = fx / surfacecolorgradient = fx;
+		endlayout;
+	endgraph;
 end;
+run;
 
-print plotmatrix_2;
+proc sgrender data = plot_data_2 template = density_plot_2;
+run;
 
 quit;
