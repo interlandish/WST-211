@@ -102,6 +102,47 @@ do i = 1 to sample + 1;
 	end;
 end;
 
+* Question 3;
+proc iml;
+
+start func_1(x1, x2);
+	if x1 <= 1 & x1 >= 0 & x2 >= 0 & x2 <= 1 then do;
+		* fx =  x1**2 * x2**2;
+		fx = (1/2) * exp(x1/2) * (1/3) * exp(x2/3);
+	end;
+	else;
+		fx = 0;
+	return fx;
+finish;
+
+free plot_1;
+
+do i = 0 to 1 by 0.1;
+	do j = 0 to 1 by 0.1;
+		plot_1 = plot_1 // ( func_1(i, j) || i || j );
+	end;
+end;
+
+columns = { fx x1 x2 };
+
+create data_1 from plot_1[c = columns];
+append from plot_1;
+close data_1;
+
+proc template;
+define statgraph template_1;
+	begingraph;
+		entrytitle "Plot or question 3.1";
+		layout overlay3d / tilt = 10 rotate = 54 cube = false walldisplay = none;
+		surfaceplotparm x = x1 y = x2 z = fx / surfacecolorgradient = fx;
+		endlayout;
+	endgraph;
+end;
+run;
+
+proc sgrender data = data_1 template = template_1;
+run;
+
 * print plot_matrix_2;
 column_names = { fx x1 x2 };
 
